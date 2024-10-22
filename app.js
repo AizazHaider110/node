@@ -24,23 +24,7 @@ mongoose.connect(dbURI)
   .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
   .catch(err => console.log(err));
 
-// Sample blog data
-let blogs = [
-  {
-    id: '1',
-    title: 'Yoshi finds eggs',
-    snippet: 'Lorem ipsum dolor sit amet consectetur',
-    body: 'Full blog post about Yoshi finding eggs...'
-  },
-  {
-    id: '2',
-    title: 'Mario finds stars',
-    snippet: 'Lorem ipsum dolor sit amet consectetur',
-    body: 'Full blog post about Mario finding stars...'
-  }
-];
 
-const generateId = () => Date.now().toString();
 
 // Routes
 // List all blogs
