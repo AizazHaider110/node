@@ -1,12 +1,30 @@
-const express = require('express');
-const morgan = require('morgan');
-const path = require('path');
-const mongoose = require('mongoose');
+import { Document } from 'mongoose';
 
-const Blog = require('./models/blog');
+export interface IBlog extends Document {
+  title: string;
+  snippet: string;
+  body: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+import express, { Request, Response, NextFunction} from 'express';
+import morgan from 'morgan';
+import path from 'path';
+import mongoose from 'mongoose';
+
+import Blog from './models/blog';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+// Custom type for request body
+interface BlogRequestBody {
+  title: string;
+  snippet: string;
+  body: string;
+}
 
 // Middleware
 app.use(express.static('public'));
@@ -34,7 +52,7 @@ startServer();
 
 // Routes
 // List all blogs
-app.get('/', async (req, res) => {
+app.get('/', async (req: Request, res: Response) => {
   try {
     const blogs = await Blog.find().sort({ createdAt: -1 });
     res.render('index', { title: 'Home', blogs });
@@ -47,14 +65,14 @@ app.get('/', async (req, res) => {
   }
 });
 
-app.get('/blogs/create', (req, res) => {
+app.get('/blogs/create', (req: Request, res: Response) => {
   res.render('create', { 
     title: 'Create a new blog',
     error: null
   });
 });
 
-app.post('/blogs', async (req, res) => {
+app.post('/blogs', async (req: Request<{}, {}, BlogRequestBody>, res: Response) => {
   try {
     const { title, snippet, body } = req.body;
     
@@ -82,24 +100,24 @@ app.post('/blogs', async (req, res) => {
   }
 });
 
+interface BlogParams {
+  id: string;
+}
 
-app.get('/blogs/:id', (req, res) => {
-  const id = req.params.id;
-
-  Blog.findById(id)
-    .then(blog => {
-      if (!blog) {
-        return res.status(404).render('404', { title: '404' });
-      }
-      res.render('details', { title: 'Blog Details', blog });
-    })
-    .catch(err => {
-      console.error('Error fetching blog:', err);
-      res.status(404).render('404', { title: '404' });
-    });
+app.get('/blogs/:id', async (req: Request<BlogParams>, res: Response) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).render('404', { title: '404' });
+    }
+    res.render('details', { title: 'Blog Details', blog });
+  } catch (err) {
+    console.error('Error fetching blog:', err);
+    res.status(404).render('404', { title: '404' });
+  }
 });
 
-app.get('/blogs/:id/edit', async (req, res) => {
+app.get('/blogs/:id/edit', async (req: Request<BlogParams>, res: Response) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) {
@@ -115,7 +133,8 @@ app.get('/blogs/:id/edit', async (req, res) => {
     res.status(404).render('404', { title: '404' });
   }
 });
-app.post('/blogs/:id/edit', async (req, res) => {
+
+app.post('/blogs/:id/edit', async (req: Request<BlogParams, {}, BlogRequestBody>, res: Response) => {
   try {
     const { title, snippet, body } = req.body;
     const id = req.params.id;
@@ -149,7 +168,7 @@ app.post('/blogs/:id/edit', async (req, res) => {
   }
 });
 
-app.post('/blogs/:id/delete', async (req, res) => {
+app.post('/blogs/:id/delete', async (req: Request<BlogParams>, res: Response) => {
   try {
     const deletedBlog = await Blog.findByIdAndDelete(req.params.id);
     if (!deletedBlog) {
@@ -165,6 +184,8 @@ app.post('/blogs/:id/delete', async (req, res) => {
   }
 });
 
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   res.status(404).render('404', { title: '404' });
 });
+
+export default app;
