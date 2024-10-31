@@ -315,6 +315,21 @@ app.post('/blogs/:id/delete', authenticateToken, async (req: Request<{ id: strin
   }
 });
 
+app.get('/logout', authenticateToken, (req: Request, res: Response) => {
+  try {
+    // Clear the JWT cookie
+    res.clearCookie('jwt');
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).render('error', {
+      title: 'Error',
+      error: 'Logout failed',
+      user: (req as AuthRequest).user
+    });
+  }
+});
+
 app.use((req: Request, res: Response) => {
   res.status(404).render('404', { title: '404', user: (req as AuthRequest).user });
 });
