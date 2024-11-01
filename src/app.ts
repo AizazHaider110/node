@@ -182,7 +182,7 @@ app.get('/logout', (req: Request, res: Response) => {
 // List all blogs
 app.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const blogs = await Blog.find().sort({ createdAt: -1 });
+    const blogs = await Blog.find({author: req.user.userId}).sort({ createdAt: -1 });
     res.render('index', { title: 'Home', blogs });
   } catch (err) {
     console.error(err);

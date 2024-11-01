@@ -6,6 +6,7 @@ interface IBlog extends Document {
   body: string;
   createdAt: Date;
   updatedAt: Date;
+  author: mongoose.Schema.Types.ObjectId;
 }
 
 const blogSchema = new Schema<IBlog>({
@@ -20,7 +21,8 @@ const blogSchema = new Schema<IBlog>({
   body: {
     type: String,
     required: true
-  }
+  },
+  author: {type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, { timestamps: true });
 
 export default mongoose.model<IBlog>('Blog', blogSchema);
